@@ -1,0 +1,31 @@
+{
+	"name": "stomped-rabbit",
+	"version": "0.1.0",
+	"description": "Browser-side rabbitMQ client (over STOMP)",
+	"main": "dist/index.js",
+	"repository": "git@github.com:Verikon/stomped-rabbit.git",
+	"author": "Bren Norris <bren@launchboard.com>",
+	"license": "MIT",
+	"scripts": {
+		"compile": "babel ./src --out-dir ./dist",
+		"testone": "mocha --require babel-core/register ",
+		"test": "mocha --require babel-core/register ./spec"
+	},
+	"devDependencies": {
+		"babel-cli": "^6.26.0",
+		"babel-loader": "^7.1.4",
+		"babel-plugin-transform-decorators-legacy": "^1.3.5",
+		"babel-preset-env": "^1.7.0",
+		"babel-preset-stage-1": "^6.24.1",
+		"chai": "^4.1.2",
+		"html-webpack-plugin": "^3.2.0",
+		"mocha": "^5.2.0",
+		"puppeteer": "^1.5.0",
+		"webpack": "^4.13.0",
+		"webpack-cli": "^3.0.8",
+		"webpack-serve": "^1.0.4"
+	},
+	"dependencies": {
+		"stompjs": "^2.3.3"
+	}
+}

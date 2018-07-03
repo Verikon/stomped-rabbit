@@ -1,0 +1,4 @@
+{
+	"presets": ["./_babelrc"],
+	"plugins": ["transform-decorators-legacy"]
+}
