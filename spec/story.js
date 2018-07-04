@@ -373,8 +373,87 @@ describe('Class Tests', function() {
 			describe('Parse Endpoint', () => {
 
 			});
-		})
+		});
 
+		describe('withStompedRabbit Tests', () => {
+
+			describe('MockClass1', () => {
+
+				it('Instanced MockClass1', async () => {
+				
+					let result = await Page.evaluate(() => {
+						return {classtest: mc1.classtest, name: mc1.constructor.name};
+					});
+
+					assert(result.classtest === 1 && result.name === 'WrappedRabbit', 'failed, expected classtest to be 1, name to be `WrappedRabbit`');
+				});
+
+				it('MockClass has been decorated with StompedRabbit', async () => {
+				
+					let result = await Page.evaluate(() => {
+						return window.mc1.mq.constructor.name;
+					});
+
+					assert(result === 'StompedRabbit', 'Expected class name `StompedRabbit`');
+				});
+
+			});
+
+			describe('MockClass2', () => {
+				
+				it('Instanced MockClass', async () => {
+				
+					let result = await Page.evaluate(() => {
+						return mc2.classtest;
+					});
+
+					assert(result === 2, 'Expected window.mc to be an instance of MockClass2');
+				});
+
+				it('MockClass has been decorated with StompedRabbit', async () => {
+				
+					let result = await Page.evaluate(() => {
+						return {classtest: mc2.classtest, name: mc2.constructor.name};
+					});
+
+					assert(result.classtest === 2 && result.name === 'WrappedRabbit', 'failed, expected classtest to be 2, name to be `WrappedRabbit`');
+				});
+
+				it('MockClass1 and MockClass2 share the same StompedRabbit instance (singleton)', async () => {
+
+					let result = await Page.evaluate(() => {
+						return mc1.mq === mc2.mq;
+					});
+
+					assert(result === true, 'MockClass1 and MockClass2 do not share the same StompedRabbit instance');
+				});
+
+			});
+
+			describe('MockClass3', () => {
+				
+				it('Instanced MockClass1', async () => {
+				
+					let result = await Page.evaluate(() => {
+						return {classtest: mc3.classtest, name: mc3.constructor.name};
+					});
+
+					assert(result.classtest === 3 && result.name === 'WrappedRabbit', 'failed, expected classtest to be 1, name to be `WrappedRabbit`');
+				});
+
+				it('MockClass1 and MockClass3 share the same StompedRabbit instance (singleton) but on the argued key (myMQ)', async () => {
+
+					let result = await Page.evaluate(() => {
+						return mc1.mq === mc3.myMQ;
+					});
+
+					assert(result === true, 'MockClass1 and MockClass2 do not share the same StompedRabbit instance');
+				});
+			});
+
+		});
+
+		it('argueStompedRabbit Tests (decorate a function)');
 	});
 
 	describe('Test-suite cleanup', () => {

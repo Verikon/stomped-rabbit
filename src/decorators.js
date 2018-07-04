@@ -1,56 +1,65 @@
 import {StompedRabbit} from './StompedRabbit';
+import crypto from 'crypto';
 
+let RabbitInstances = {
+	default: null
+};
 
-const StompRabbitInstance = new StompedRabbit();
-
-export const withStompedRabbit = function( args ) {
+/**
+ * Decorate a class with an instance of StompedMongo
+ * 
+ * @param {Object} args the argument object
+ * @param {}
+ * 
+ * @returns {} 
+ */
+export function withStompedRabbit( args ) {
 
 	args = args || {};
 
+	let {initialize, key, config, instance} = args;
+
+	//default initialize false (should be true...)
+	initialize = initialize === undefined ? false : initialize;
+
+	//default the instance to the default singleton
+	instance = instance === undefined ? 'default' : instance;
+
+	//default key to "db" @todo: make this "mg"
+	key = key || 'mq';
+
+	//check to ensure we have a config if we're initializing, or throw.
+	if(initialize) {
+		if(!config) console.error('Decorating StompedRabbit with `initialize:true` requires a config be optioned.');
+		if(!config.endpoint) console.error('Decorate configuration as `config:{endpoint:<rabbit url>}`');
+	}
+
 	return function( target ) {
 
-		var configure;
+		class WrappedRabbit extends target {
 
-		//if our decorator is argued a config and isn't instanced.
-		configure = !!(!StompRabbitInstance.configured );
+			constructor( cargs ) {
 
-		//if this is a react component
-		if( target.prototype.isReactComponent ){
+				super(cargs);
 
-			return function( props, name, descriptor ) {
+				let id = crypto.randomBytes(16).toString("hex");
 
-				props = props || {};
-
-				let config = {};
-
-				config.config = args.config || props.config.mq;
-				config.dispatch = props.dispatch || null;
-				config.connect = config.connect === undefined ? true : config.connect;
-
-				//if we're instantiating the class ( ie. StompRabbitInstance is null/not an instance, and we've been argued a config into the decorator )
-				if(configure && !StompRabbitInstance.configured) {
-
-					//if( props.dispatch ) args = Object.assign({dispatch: props.dispatch}, args);
-					StompRabbitInstance.configure(config)
-
-					//warn that without a dispatcher, we won't be dispatching anything to the redux store.
-					if(!props.dispatch) {
-						console.warn( 'RabbitRedux has instantiated but in order to dispatch actions, requires the redux store dispatcher be present, did you decorate with redux connect, and after it?' );
-					}
-
+				if(!RabbitInstances[instance] || !(RabbitInstances[instance].inst instanceof StompedRabbit)) {
+					RabbitInstances[instance] =  {
+						inst: new StompedRabbit(args),
+						ids: [id]
+					};
+				} else {
+					RabbitInstances[instance].ids.push(id);
 				}
 
-				var newProps = Object.assign( {}, props );
-				newProps.mq = StompRabbitInstance;
-				return React.createElement( target, newProps );
+				this[key] = RabbitInstances[instance].inst;
+
 			}
 
 		}
-		else {
 
-			target.prototype.mq = StompRabbitInstance;
-		}
-
+		return WrappedRabbit;
 	}
 
 }

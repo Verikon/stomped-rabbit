@@ -1,4 +1,4 @@
 {
-	"presets": ["./_babelrc"],
+	"presets": ["modern-browsers", "stage-1"],
 	"plugins": ["transform-decorators-legacy"]
 }
