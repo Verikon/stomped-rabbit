@@ -15,6 +15,7 @@ let RabbitInstances = {
  * @param {Boolean} args.initialize initialize upon construction, default true.
  * @param {Object} args.config a configuration object for the instance
  * @param {Function} args.onConnect a callback for when the instance connects
+ * @param {Function} args.onConnectError a callback for when the instance fails to connect
  * @param {Function|String} args.config.endpoint the rabbitMQ URI - eg 'ws://user:pass@myrabbit.com:15754' - when a string, the name of the class method to invoke.
  * 
  * @returns {} 
@@ -23,7 +24,7 @@ export function withStompedRabbit( args ) {
 
 	args = args || {};
 
-	let {initialize, key, config, instance, onConnect} = args;
+	let {initialize, key, config, instance, onConnect, onConnectError} = args;
 
 	//default initialize false (should be true...)
 	initialize = initialize === undefined ? true : initialize;
@@ -65,31 +66,45 @@ export function withStompedRabbit( args ) {
 
 				this[key] = RabbitInstances[instance].inst;
 
-				if(initialize)
+				if(initialize) {
 					this.decInitialize();
-
-				if(onConnect) {
-
-					let fn;
-					if(typeof onConnect === 'function') fn = onConnect;
-					else if(typeof this[onConnect] === 'function') fn = this[onConnect];
-					else
-						console.warn('Stomped-Rabbit::onConnect was neither a function or a class member method');
-
-					//were using the lightweight co package to account for the possibility of generators being argued.
-					if(fn) {
-						co(function*() { yield fn(); })
-					}
-
 				}
 
-			}
 
+			}
+			
 			async decInitialize() {
 
 				this[key].configure(config);
-				let connection = this[key].connect();
+				let connection = this[key].connect()
+					.then(res => {
 
+						if(onConnect) {
+							let fn;
+							if(typeof onConnect === 'function') fn = onConnect;
+							else if(typeof this[onConnect] === 'function') fn = this[onConnect];
+							else
+								console.warn('Stomped-Rabbit::onConnect was neither a function or a class member method');
+		
+							//were using the lightweight co package to account for the possibility of generators being argued.
+							if(fn) { co(function*() { yield fn(); }) }
+						}
+					})
+					.catch(err => {
+						
+						if(onConnectError) {
+							let fn;
+							if(typeof onConnectError === 'function') fn = onConnectError;
+							else if(typeof this[onConnectError] === 'function') fn = this[onConnectError];
+							else
+								console.warn('Stomped-Rabbit::onConnectError was neither a function or a class member method');
+
+							//were using the lightweight co package to account for the possibility of generators being argued.
+							if(fn) { co(function*() { yield fn(err); }) }
+						}
+					});
+
+				
 			}
 
 		}

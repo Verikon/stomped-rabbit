@@ -72,7 +72,7 @@ export class StompedRabbit extends EventEmitter {
 	 * @param {Object} config the configuration object.
 	 * @param {String} config.endpoint the websocket uri (eg wss://user:pass@somwhere.com:8888)
 
-	 * @param {Boolean} config.debug - produce debug information to the console.
+	 * @param {Boolean|Function} config.debug - produce debug information to the console, default: false. When argued true, use default console debugging. When a function one argument exists - the error message as a string.
 	 * 
 	 * @returns {Promise}  
 	 */
@@ -84,6 +84,7 @@ export class StompedRabbit extends EventEmitter {
 				throw new Error('attempting to connect with an unconfigured instance, invoke configure()');
 
 			const {endpoint, auth, heartbeat_incoming, heartbeat_outgoing} = this.config;
+			let {debug} = this.config;
 			const {user, pass, uri} = auth;
 
 			//instance a new Websocket
@@ -91,6 +92,15 @@ export class StompedRabbit extends EventEmitter {
 
 			//set up stomp over websockets.
 			this.stomp = Stomp.over(ws);
+
+			//set the debug.
+			debug = debug === undefined ? false : debug;
+
+			if(!debug) {
+				this.stomp.debug = () => {};
+			} else if( typeof debug === 'function') {
+				this.stomp.debug = debug;
+			}
 
 			// rabbit webstomp does not support heartbeats.
 			this.stomp.heartbeat.outgoing = heartbeat_outgoing;
