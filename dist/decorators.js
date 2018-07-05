@@ -7,12 +7,6 @@ exports.withStompedRabbit = withStompedRabbit;
 
 var _StompedRabbit = require('./StompedRabbit');
 
-var _crypto = require('crypto');
-
-var _crypto2 = _interopRequireDefault(_crypto);
-
-var _util = require('util');
-
 var _co = require('co');
 
 var _co2 = _interopRequireDefault(_co);
@@ -66,7 +60,7 @@ function withStompedRabbit(args) {
 
 				super(cargs);
 
-				let id = _crypto2.default.randomBytes(16).toString("hex");
+				let id = parseInt(Math.random() * 10000);
 
 				if (!RabbitInstances[instance] || !(RabbitInstances[instance].inst instanceof _StompedRabbit.StompedRabbit)) {
 
@@ -88,6 +82,7 @@ function withStompedRabbit(args) {
 					let fn;
 					if (typeof onConnect === 'function') fn = onConnect;else if (typeof this[onConnect] === 'function') fn = this[onConnect];else console.warn('Stomped-Rabbit::onConnect was neither a function or a class member method');
 
+					//were using the lightweight co package to account for the possibility of generators being argued.
 					if (fn) {
 						(0, _co2.default)(function* () {
 							yield fn();

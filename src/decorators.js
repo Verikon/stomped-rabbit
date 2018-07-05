@@ -1,6 +1,4 @@
 import {StompedRabbit} from './StompedRabbit';
-import crypto from 'crypto';
-import { log } from 'util';
 
 import co from 'co';
 
@@ -51,7 +49,7 @@ export function withStompedRabbit( args ) {
 
 				super(cargs);
 
-				let id = crypto.randomBytes(16).toString("hex");
+				let id = parseInt(Math.random()*10000);
 
 				if(!RabbitInstances[instance] || !(RabbitInstances[instance].inst instanceof StompedRabbit)) {
 
