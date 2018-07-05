@@ -2,7 +2,7 @@ import path from 'path';
 
 import {StompedRabbit, withStompedRabbit} from 'index'
 
-@withStompedRabbit()
+@withStompedRabbit({initialize: false})
 class MockClass1 { 
 
 	constructor() {
@@ -10,7 +10,7 @@ class MockClass1 {
 	}
 }
 
-@withStompedRabbit()
+@withStompedRabbit({initialize: false})
 class MockClass2 {
 
 	constructor() {
@@ -18,7 +18,7 @@ class MockClass2 {
 	}
 }
 
-@withStompedRabbit({key: 'myMQ'})
+@withStompedRabbit({initialize: false, key: 'myMQ'})
 class MockClass3 {
 
 	constructor() {

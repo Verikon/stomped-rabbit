@@ -1,5 +1,8 @@
 import {StompedRabbit} from './StompedRabbit';
 import crypto from 'crypto';
+import { log } from 'util';
+
+import co from 'co';
 
 let RabbitInstances = {
 	default: null
@@ -9,7 +12,12 @@ let RabbitInstances = {
  * Decorate a class with an instance of StompedMongo
  * 
  * @param {Object} args the argument object
- * @param {}
+ * @param {String} args.instance which instance to use, default : 'default'.
+ * @param {String} args.key which attribute to decorate into the class: default 'mq' thus <yourclass>.mq accesses the StompedRabbit instance
+ * @param {Boolean} args.initialize initialize upon construction, default true.
+ * @param {Object} args.config a configuration object for the instance
+ * @param {Function} args.onConnect a callback for when the instance connects
+ * @param {Function|String} args.config.endpoint the rabbitMQ URI - eg 'ws://user:pass@myrabbit.com:15754' - when a string, the name of the class method to invoke.
  * 
  * @returns {} 
  */
@@ -17,10 +25,10 @@ export function withStompedRabbit( args ) {
 
 	args = args || {};
 
-	let {initialize, key, config, instance} = args;
+	let {initialize, key, config, instance, onConnect} = args;
 
 	//default initialize false (should be true...)
-	initialize = initialize === undefined ? false : initialize;
+	initialize = initialize === undefined ? true : initialize;
 
 	//default the instance to the default singleton
 	instance = instance === undefined ? 'default' : instance;
@@ -28,10 +36,11 @@ export function withStompedRabbit( args ) {
 	//default key to "db" @todo: make this "mg"
 	key = key || 'mq';
 
+
 	//check to ensure we have a config if we're initializing, or throw.
 	if(initialize) {
-		if(!config) console.error('Decorating StompedRabbit with `initialize:true` requires a config be optioned.');
-		if(!config.endpoint) console.error('Decorate configuration as `config:{endpoint:<rabbit url>}`');
+		if(!config) return console.error('StompedRabbit refused to decorate. Either provide a config in the decorator arguments or set initialize false.');
+		if(!config.endpoint) return console.error('Decorate configuration as `config:{endpoint:<rabbit url>}`');
 	}
 
 	return function( target ) {
@@ -45,15 +54,43 @@ export function withStompedRabbit( args ) {
 				let id = crypto.randomBytes(16).toString("hex");
 
 				if(!RabbitInstances[instance] || !(RabbitInstances[instance].inst instanceof StompedRabbit)) {
+
 					RabbitInstances[instance] =  {
 						inst: new StompedRabbit(args),
 						ids: [id]
 					};
+
 				} else {
+
 					RabbitInstances[instance].ids.push(id);
 				}
 
 				this[key] = RabbitInstances[instance].inst;
+
+				if(initialize)
+					this.decInitialize();
+
+				if(onConnect) {
+
+					let fn;
+					if(typeof onConnect === 'function') fn = onConnect;
+					else if(typeof this[onConnect] === 'function') fn = this[onConnect];
+					else
+						console.warn('Stomped-Rabbit::onConnect was neither a function or a class member method');
+
+					//were using the lightweight co package to account for the possibility of generators being argued.
+					if(fn) {
+						co(function*() { yield fn(); })
+					}
+
+				}
+
+			}
+
+			async decInitialize() {
+
+				this[key].configure(config);
+				let connection = this[key].connect();
 
 			}
 

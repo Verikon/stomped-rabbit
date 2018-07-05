@@ -3,55 +3,112 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.withStompedRabbit = undefined;
+exports.withStompedRabbit = withStompedRabbit;
 
 var _StompedRabbit = require('./StompedRabbit');
 
-const StompRabbitInstance = new _StompedRabbit.StompedRabbit();
+var _crypto = require('crypto');
 
-const withStompedRabbit = exports.withStompedRabbit = function (args) {
+var _crypto2 = _interopRequireDefault(_crypto);
+
+var _util = require('util');
+
+var _co = require('co');
+
+var _co2 = _interopRequireDefault(_co);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+let RabbitInstances = {
+	default: null
+};
+
+/**
+ * Decorate a class with an instance of StompedMongo
+ * 
+ * @param {Object} args the argument object
+ * @param {String} args.instance which instance to use, default : 'default'.
+ * @param {String} args.key which attribute to decorate into the class: default 'mq' thus <yourclass>.mq accesses the StompedRabbit instance
+ * @param {Boolean} args.initialize initialize upon construction, default true.
+ * @param {Object} args.config a configuration object for the instance
+ * @param {Function} args.onConnect a callback for when the instance connects
+ * @param {Function|String} args.config.endpoint the rabbitMQ URI - eg 'ws://user:pass@myrabbit.com:15754' - when a string, the name of the class method to invoke.
+ * 
+ * @returns {} 
+ */
+function withStompedRabbit(args) {
 
 	args = args || {};
 
+	let { initialize, key, config, instance, onConnect } = args;
+
+	//default initialize false (should be true...)
+	initialize = initialize === undefined ? true : initialize;
+
+	//default the instance to the default singleton
+	instance = instance === undefined ? 'default' : instance;
+
+	//default key to "db" @todo: make this "mg"
+	key = key || 'mq';
+
+	//check to ensure we have a config if we're initializing, or throw.
+	if (initialize) {
+		if (!config) return console.error('StompedRabbit refused to decorate. Either provide a config in the decorator arguments or set initialize false.');
+		if (!config.endpoint) return console.error('Decorate configuration as `config:{endpoint:<rabbit url>}`');
+	}
+
 	return function (target) {
+		let WrappedRabbit = class WrappedRabbit extends target {
 
-		var configure;
+			constructor(cargs) {
 
-		//if our decorator is argued a config and isn't instanced.
-		configure = !!!StompRabbitInstance.configured;
+				super(cargs);
 
-		//if this is a react component
-		if (target.prototype.isReactComponent) {
+				let id = _crypto2.default.randomBytes(16).toString("hex");
 
-			return function (props, name, descriptor) {
+				if (!RabbitInstances[instance] || !(RabbitInstances[instance].inst instanceof _StompedRabbit.StompedRabbit)) {
 
-				props = props || {};
+					RabbitInstances[instance] = {
+						inst: new _StompedRabbit.StompedRabbit(args),
+						ids: [id]
+					};
+				} else {
 
-				let config = {};
-
-				config.config = args.config || props.config.mq;
-				config.dispatch = props.dispatch || null;
-				config.connect = config.connect === undefined ? true : config.connect;
-
-				//if we're instantiating the class ( ie. StompRabbitInstance is null/not an instance, and we've been argued a config into the decorator )
-				if (configure && !StompRabbitInstance.configured) {
-
-					//if( props.dispatch ) args = Object.assign({dispatch: props.dispatch}, args);
-					StompRabbitInstance.configure(config);
-
-					//warn that without a dispatcher, we won't be dispatching anything to the redux store.
-					if (!props.dispatch) {
-						console.warn('RabbitRedux has instantiated but in order to dispatch actions, requires the redux store dispatcher be present, did you decorate with redux connect, and after it?');
-					}
+					RabbitInstances[instance].ids.push(id);
 				}
 
-				var newProps = Object.assign({}, props);
-				newProps.mq = StompRabbitInstance;
-				return React.createElement(target, newProps);
-			};
-		} else {
+				this[key] = RabbitInstances[instance].inst;
 
-			target.prototype.mq = StompRabbitInstance;
-		}
+				if (initialize) this.decInitialize();
+
+				if (onConnect) {
+
+					let fn;
+					if (typeof onConnect === 'function') fn = onConnect;else if (typeof this[onConnect] === 'function') fn = this[onConnect];else console.warn('Stomped-Rabbit::onConnect was neither a function or a class member method');
+
+					if (fn) {
+						(0, _co2.default)(function* () {
+							yield fn();
+						});
+					}
+				}
+			}
+
+			decInitialize() {
+				var _this = this;
+
+				return _asyncToGenerator(function* () {
+
+					_this[key].configure(config);
+					let connection = _this[key].connect();
+				})();
+			}
+
+		};
+
+
+		return WrappedRabbit;
 	};
-};
+}

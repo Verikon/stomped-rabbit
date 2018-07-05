@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.StompedRabbit = undefined;
 
+var _events = require('events');
+
+var _uuid = require('uuid');
+
 var _stompjs = require('stompjs');
 
 var _stompjs2 = _interopRequireDefault(_stompjs);
@@ -17,17 +21,26 @@ var _RPC = require('./patterns/RPC');
 
 var _RPC2 = _interopRequireDefault(_RPC);
 
+var _PubSub = require('./patterns/PubSub');
+
+var _PubSub2 = _interopRequireDefault(_PubSub);
+
 var _Topic = require('./patterns/Topic');
 
 var _Topic2 = _interopRequireDefault(_Topic);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-let StompedRabbit = exports.StompedRabbit = class StompedRabbit {
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+let StompedRabbit = exports.StompedRabbit = class StompedRabbit extends _events.EventEmitter {
 
 	constructor(props) {
 
 		props = props || {};
+
+		super(props);
+
 		this.setInitialState();
 	}
 
@@ -36,28 +49,41 @@ let StompedRabbit = exports.StompedRabbit = class StompedRabbit {
 		this.configured = false;
 		this.connected = false;
 		this.patterns = {};
+		this.provisions = {};
+		this.client_id = null;
 	}
 
 	/**
   * Configure StompRabbit
   *
   * @param {Object} props.config the configuration object
-  * @param {String} props.config.endpoint the endpoint uri ( eg ws://someone:secret@rabbithost:port )
+  * @param {String} props.config.endpoint the endpoint uri ( eg ws://someone:secret@rabbithost:port/stomp/websocket )
+  * @param {String} props.config.direct a default direct exchange for the application (you set this up on rabbitMQ)
+  * @param {String} props.config.fanout a default fanout exchange for the application (you set this up on rabbitMQ)
+  * @param {String} props.config.topic a default topic exchange for the application.
   * @param {Integer} config.heartbeat_incoming milliseconds for incoming heartbeats, default 20000.
   * @param {Integer} config.heartbeat_outgoing milliseconds for outgoing heartbeats, default 0.
   * @param {Boolean} config.debug run the instance in debug mode.
+  * @param {Array} config.queues queues to actualise upon conneciton.
+  * @param {String} config.queues[].pattern the pattern to use for this queue
+  * @param {String} config.queues[].type the type of queue "fanout"|"direct"|"topic"
+  * @param {String} config.queues[].name the name or topic pattern for this queue
+  * @param {Function} config.queues[].listener the function to listen upon the queue with.
   * @param {Boolean} connect configure and connect.
-  *
   * @returns {Promise} {success: true}
   **/
-	configure(config, connect) {
+	configure(config) {
 
-		if (!config || !this.realObject(config)) throw new Error('provide a valid config object');
+		if (!config || !this._realObject(config)) throw new Error('provide a valid config object');
 
 		config.heartbeat_incoming = config.heartbeat_incoming || 20000;
 		config.heartbeat_outgoing = config.heartbeat_outgoing || 0;
-
+		config.direct = config.direct ? config.direct.replace(/\//g, '') : null;
+		config.topic = config.topic ? config.topic.replace(/\//g, '') : null;
+		config.fanout = config.fanout ? config.fanout.replace(/\//g, '') : null;
 		config.auth = this.parseEndpoint(config.endpoint);
+
+		config.queues = config.queues || [];
 
 		this.config = config;
 
@@ -76,36 +102,34 @@ let StompedRabbit = exports.StompedRabbit = class StompedRabbit {
   * @returns {Promise}  
   */
 	connect() {
+		var _this = this;
 
-		return new Promise((resolve, reject) => {
+		return new Promise(function (resolve, reject) {
 
-			if (this.config) throw new Error('attempting to connect with an unconfigured instance, invoke configure()');
+			if (!_this.config) throw new Error('attempting to connect with an unconfigured instance, invoke configure()');
 
-			const { endpoint, auth, heartbeat_incoming, heartbeat_outgoing } = this.config;
+			const { endpoint, auth, heartbeat_incoming, heartbeat_outgoing } = _this.config;
 			const { user, pass, uri } = auth;
 
 			//instance a new Websocket
 			let ws = new WebSocket(endpoint);
 
 			//set up stomp over websockets.
-			this.stomp = _stompjs2.default.over(ws);
+			_this.stomp = _stompjs2.default.over(ws);
 
 			// rabbit webstomp does not support heartbeats.
-			this.stomp.heartbeat.outgoing = heartbeat_outgoing;
-			this.stomp.heartbeat.incoming = heartbeat_incoming;
+			_this.stomp.heartbeat.outgoing = heartbeat_outgoing;
+			_this.stomp.heartbeat.incoming = heartbeat_incoming;
 
-			this.stomp.connect(user, pass, () => {
+			_this.stomp.connect(user, pass, function () {
 
-				this.bindPatterns();
+				_this.bindPatterns();
 
-				Object.keys(this.patterns).forEach(qpattern => {
-					this.patterns[qpattern].attachClient(this.stomp);
-				});
-
-				this.connected = true;
+				_this.connected = true;
 
 				resolve(true);
-			}, err => {
+				_this.emit('connected');
+			}, function (err) {
 				reject(err);
 			});
 		});
@@ -113,9 +137,24 @@ let StompedRabbit = exports.StompedRabbit = class StompedRabbit {
 
 	bindPatterns() {
 
-		this.cte = this.patterns.cte = new _CTE2.default({ config: this.config });
-		this.rpc = this.patterns.rpc = new _RPC2.default({ config: this.config });
-		this.topic = this.patterns.topic = new _Topic2.default({ config: this.config });
+		//this.cte = this.patterns.cte = new CTE({config: this.config});
+		this.pubsub = this.patterns.pubsub = new _PubSub2.default({ instance: this });
+		this.rpc = this.patterns.rpc = new _RPC2.default({ instance: this });
+		//this.topic = this.patterns.topic = new Topic({config: this.config});
+	}
+
+	/**
+  * todo.
+  */
+	startConfiguredQueues() {
+		var _this2 = this;
+
+		return _asyncToGenerator(function* () {
+
+			const { queues } = _this2.config;
+
+			yield Promise.all(queues.map(function (queue) {}));
+		})();
 	}
 
 	/**
@@ -165,4 +204,11 @@ let StompedRabbit = exports.StompedRabbit = class StompedRabbit {
 
 		return !!obj && obj.constructor === Object;
 	}
+
+	clientId(refresh) {
+
+		this.client_id = refresh || !this.client_id ? (0, _uuid.v4)() : this.client_id;
+		return this.client_id;
+	}
+
 };

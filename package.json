@@ -1,6 +1,6 @@
 {
 	"name": "stomped-rabbit",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Browser-side rabbitMQ client (over STOMP)",
 	"main": "dist/index.js",
 	"repository": "git@github.com:Verikon/stomped-rabbit.git",
@@ -18,6 +18,7 @@
 		"babel-preset-modern-browsers": "^11.0.1",
 		"babel-preset-stage-1": "^6.24.1",
 		"chai": "^4.1.2",
+		"co": "^4.6.0",
 		"html-webpack-plugin": "^3.2.0",
 		"mocha": "^5.2.0",
 		"puppeteer": "^1.5.0",

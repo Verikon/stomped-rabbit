@@ -8,7 +8,7 @@ var _StompedRabbit = require('./StompedRabbit');
 
 Object.defineProperty(exports, 'StompedRabbit', {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _StompedRabbit.StompedRabbit;
   }
 });
@@ -17,7 +17,7 @@ var _decorators = require('./decorators');
 
 Object.defineProperty(exports, 'withStompedRabbit', {
   enumerable: true,
-  get: function () {
+  get: function get() {
     return _decorators.withStompedRabbit;
   }
 });

@@ -1,3 +1,4 @@
+import {EventEmitter} from 'events';
 import {v4 as uuid} from 'uuid';
 import Stomp from 'stompjs';
 
@@ -6,11 +7,14 @@ import RPC from './patterns/RPC';
 import PubSub from './patterns/PubSub';
 import Topic from './patterns/Topic';
 
-export class StompedRabbit {
+export class StompedRabbit extends EventEmitter {
 
 	constructor( props ) {
 
 		props = props || {};
+
+		super(props);
+
 		this.setInitialState();
 	}
 
@@ -27,7 +31,7 @@ export class StompedRabbit {
 	 * Configure StompRabbit
 	 *
 	 * @param {Object} props.config the configuration object
-	 * @param {String} props.config.endpoint the endpoint uri ( eg ws://someone:secret@rabbithost:port )
+	 * @param {String} props.config.endpoint the endpoint uri ( eg ws://someone:secret@rabbithost:port/stomp/websocket )
 	 * @param {String} props.config.direct a default direct exchange for the application (you set this up on rabbitMQ)
 	 * @param {String} props.config.fanout a default fanout exchange for the application (you set this up on rabbitMQ)
 	 * @param {String} props.config.topic a default topic exchange for the application.
@@ -40,7 +44,6 @@ export class StompedRabbit {
 	 * @param {String} config.queues[].name the name or topic pattern for this queue
 	 * @param {Function} config.queues[].listener the function to listen upon the queue with.
 	 * @param {Boolean} connect configure and connect.
-	 *
 	 * @returns {Promise} {success: true}
 	 **/
 	configure( config ) {
@@ -100,6 +103,8 @@ export class StompedRabbit {
 				this.connected = true;
 
 				resolve(true);
+				this.emit('connected');
+
 			},
 			err => { reject(err); });
 		});
