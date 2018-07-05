@@ -105,7 +105,7 @@ export default class RPC extends PatternBase {
 				let response = this.decode(frame.body);
 				this.stomp.unsubscribe(responseQueue);
 
-				resolve({success: true, result: response});
+				resolve(response);
 
 			}, {id: responseQueue, 'exclusive': true});
 

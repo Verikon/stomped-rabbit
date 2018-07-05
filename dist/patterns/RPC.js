@@ -130,7 +130,7 @@ let RPC = class RPC extends _PatternBase2.default {
 				let response = _this3.decode(frame.body);
 				_this3.stomp.unsubscribe(responseQueue);
 
-				resolve({ success: true, result: response });
+				resolve(response);
 			}, { id: responseQueue, 'exclusive': true });
 
 			//fire off the rpc invocation.
