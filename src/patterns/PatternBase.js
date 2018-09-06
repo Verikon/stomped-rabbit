@@ -70,8 +70,9 @@ export default class PatternBase {
 
 	toURL( queue, options ) {
 
-		return options.endpoint+queue;
+		return options.endpoint ? options.endpoint+queue : queue;
 	}
+
 	errorHandle( err ) {
 
 		return {success:false, error: err.message};

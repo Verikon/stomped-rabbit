@@ -114,15 +114,22 @@ let RPC = class RPC extends _PatternBase2.default {
 
 		return new Promise(function (resolve, reject) {
 
+			options = options || {};
+
 			//parse the options.
-			options = _this3.parseOptions(options);
+			const parsedOptions = _this3.parseOptions(options);
+
+			//apply alloweable timeout to the RPC pattern.Not done in the parseOptions baseclass method as this should be unique to the pattern.
+			if (options.timeout) parsedOptions.timeout = options.timeout;
 
 			//encode the options.
 			message = _this3.encode(message);
 
+			let timer;
+
 			//create a response queue and apply it to the options.
 			let responseQueue = 'stomped-' + parseInt(Math.random() * 10000000, 10);
-			options.queue['reply-to'] = responseQueue;
+			parsedOptions.queue['reply-to'] = responseQueue;
 
 			//set up the listener on the response queue, autodeleting it (this is an exclusive use)
 			_this3.stomp.subscribe(responseQueue, function (frame) {
@@ -130,11 +137,19 @@ let RPC = class RPC extends _PatternBase2.default {
 				let response = _this3.decode(frame.body);
 				_this3.stomp.unsubscribe(responseQueue);
 
+				if (timer) clearTimeout(timer);
 				resolve(response);
 			}, { id: responseQueue, 'exclusive': true });
 
+			if (parsedOptions.timeout) {
+
+				setTimeout(function (e) {
+					resolve({ success: false, errored: true, message: 'rpc invocation timed out on queue ' + queue + ' after ' + parsedOptions.timeout + 'ms' });
+				}, parsedOptions.timeout);
+			}
+
 			//fire off the rpc invocation.
-			_this3.stomp.send(_this3.toURL(queue, options), options.queue, message);
+			_this3.stomp.send(_this3.toURL(queue, parsedOptions), parsedOptions.queue, message);
 		});
 	}
 

@@ -89,15 +89,22 @@ export default class RPC extends PatternBase {
 
 		return new Promise((resolve, reject) => {
 
+			options = options || {};
+
 			//parse the options.
-			options = this.parseOptions(options);
+			const parsedOptions = this.parseOptions(options);
+
+			//apply alloweable timeout to the RPC pattern.Not done in the parseOptions baseclass method as this should be unique to the pattern.
+			if(options.timeout) parsedOptions.timeout = options.timeout
 
 			//encode the options.
 			message = this.encode(message);
 		
+			let timer;
+
 			//create a response queue and apply it to the options.
 			let responseQueue = 'stomped-'+parseInt(Math.random() * 10000000, 10);
-			options.queue['reply-to'] = responseQueue;
+			parsedOptions.queue['reply-to'] = responseQueue;
 
 			//set up the listener on the response queue, autodeleting it (this is an exclusive use)
 			this.stomp.subscribe(responseQueue, frame => {
@@ -105,12 +112,20 @@ export default class RPC extends PatternBase {
 				let response = this.decode(frame.body);
 				this.stomp.unsubscribe(responseQueue);
 
+				if(timer) clearTimeout(timer);
 				resolve(response);
 
 			}, {id: responseQueue, 'exclusive': true});
 
+			if(parsedOptions.timeout) {
+
+				setTimeout(e => {
+					resolve({success: false, errored: true, message: 'rpc invocation timed out on queue '+queue+' after '+ parsedOptions.timeout + 'ms'});
+				}, parsedOptions.timeout)
+			}
+
 			//fire off the rpc invocation.
-			this.stomp.send(this.toURL(queue, options), options.queue, message);
+			this.stomp.send(this.toURL(queue, parsedOptions), parsedOptions.queue, message);
 
 		});
 
