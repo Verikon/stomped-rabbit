@@ -87,11 +87,13 @@ function withStompedRabbit(args) {
 				return _asyncToGenerator(function* () {
 
 					_this[key].configure(config);
+
 					let connection = _this[key].connect().then(function (res) {
 
 						if (onConnect) {
+
 							let fn;
-							if (typeof onConnect === 'function') fn = onConnect;else if (typeof _this[onConnect] === 'function') fn = _this[onConnect];else console.warn('Stomped-Rabbit::onConnect was neither a function or a class member method');
+							if (typeof onConnect === 'function') fn = onConnect;else if (typeof _this[onConnect] === 'function') fn = _this[onConnect].bind(_this);else console.warn('Stomped-Rabbit::onConnect was neither a function or a class member method');
 
 							//were using the lightweight co package to account for the possibility of generators being argued.
 							if (fn) {

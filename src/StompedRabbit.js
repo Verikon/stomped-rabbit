@@ -112,8 +112,10 @@ export class StompedRabbit extends EventEmitter {
 
 				this.connected = true;
 
-				resolve(true);
-				this.emit('connected');
+				setTimeout(e => {
+					resolve(true);
+					this.emit('connected');
+				}, 500);
 
 			},
 			err => { reject(err); });

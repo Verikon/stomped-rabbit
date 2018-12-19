@@ -137,8 +137,10 @@ let StompedRabbit = exports.StompedRabbit = class StompedRabbit extends _events.
 
 				_this.connected = true;
 
-				resolve(true);
-				_this.emit('connected');
+				setTimeout(function (e) {
+					resolve(true);
+					_this.emit('connected');
+				}, 500);
 			}, function (err) {
 				reject(err);
 			});

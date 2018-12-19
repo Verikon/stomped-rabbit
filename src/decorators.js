@@ -76,13 +76,15 @@ export function withStompedRabbit( args ) {
 			async decInitialize() {
 
 				this[key].configure(config);
+
 				let connection = this[key].connect()
 					.then(res => {
 
 						if(onConnect) {
+
 							let fn;
 							if(typeof onConnect === 'function') fn = onConnect;
-							else if(typeof this[onConnect] === 'function') fn = this[onConnect];
+							else if(typeof this[onConnect] === 'function') fn = this[onConnect].bind(this);
 							else
 								console.warn('Stomped-Rabbit::onConnect was neither a function or a class member method');
 		
