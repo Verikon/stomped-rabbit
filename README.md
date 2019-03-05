@@ -2,6 +2,7 @@ Usage:
 
 import {withStompedRabbit} from 'stomped-rabbit';
 
+```
 @withStompedRabbit({
   config: {
     endpoint: 'ws://someserver.com'
@@ -21,3 +22,4 @@ class myClass {
  
  }
 }
+```
