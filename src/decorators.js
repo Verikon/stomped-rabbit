@@ -24,7 +24,14 @@ export function withStompedRabbit( args ) {
 
 	args = args || {};
 
-	let {initialize, key, config, instance, onConnect, onConnectError} = args;
+	let {
+		initialize,
+		key,
+		config,
+		instance,
+		onConnect,
+		onConnectError
+	} = args;
 
 	//default initialize false (should be true...)
 	initialize = initialize === undefined ? true : initialize;
@@ -67,13 +74,18 @@ export function withStompedRabbit( args ) {
 				this[key] = RabbitInstances[instance].inst;
 
 				if(initialize) {
-					this.decInitialize();
+
+					console.log('####WHAT IS THIS?', this, typeof onConnectError);
+					this.decInitialize({onConnect, onConnectError});
 				}
 
 
 			}
 			
-			async decInitialize() {
+			async decInitialize({
+				onConnect,
+				onConnectError
+			}) {
 
 				this[key].configure(config);
 
@@ -92,9 +104,10 @@ export function withStompedRabbit( args ) {
 							if(fn) { co(function*() { yield fn(); }) }
 						}
 					})
-					.catch(err => {
-						
+					.catch(async err => {
+
 						if(onConnectError) {
+
 							let fn;
 							if(typeof onConnectError === 'function') fn = onConnectError;
 							else if(typeof this[onConnectError] === 'function') fn = this[onConnectError];
@@ -103,6 +116,7 @@ export function withStompedRabbit( args ) {
 
 							//were using the lightweight co package to account for the possibility of generators being argued.
 							if(fn) { co(function*() { yield fn(err); }) }
+
 						}
 					});
 

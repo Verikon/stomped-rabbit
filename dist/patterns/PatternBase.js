@@ -33,6 +33,8 @@ let PatternBase = class PatternBase {
 		retOptions.queue['auto-delete'] = options.autoDelete === undefined ? false : options.autoDelete;
 		retOptions.queue['exclusive'] = options.exclusive === undefined ? false : options.exclusive;
 
+		retOptions.timeout = options.timeout || 15000;
+
 		if (options.type) {
 
 			let prefix;
