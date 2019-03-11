@@ -21,3 +21,12 @@ Object.defineProperty(exports, 'withStompedRabbit', {
     return _decorators.withStompedRabbit;
   }
 });
+
+var _Client = require('./Client');
+
+Object.defineProperty(exports, 'Client', {
+  enumerable: true,
+  get: function get() {
+    return _Client.Client;
+  }
+});
