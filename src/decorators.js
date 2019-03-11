@@ -75,7 +75,6 @@ export function withStompedRabbit( args ) {
 
 				if(initialize) {
 
-					console.log('####WHAT IS THIS?', this, typeof onConnectError);
 					this.decInitialize({onConnect, onConnectError});
 				}
 
