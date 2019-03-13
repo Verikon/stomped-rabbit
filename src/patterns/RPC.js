@@ -80,9 +80,9 @@ export default class RPC extends PatternBase {
 	 * Invoke an RPC listener
 	 * 
 	 * @param {String} queue the queue/endpoint to the RPC listener.
-	 * @param {*} the message being sent as arguments to the listener.
-	 * @param {Object} an options object
-	 * 
+	 * @param {*} message the message being sent as arguments to the listener.
+	 * @param {Object} options an options object
+	 * @param {Number} options.timeout default, no timeout.
 	 * @returns {Promise} resolves with the RPC response.
 	 */
 	invoke( queue, message, options ) {
@@ -120,7 +120,7 @@ export default class RPC extends PatternBase {
 			if(parsedOptions.timeout) {
 
 				setTimeout(e => {
-					resolve({success: false, errored: true, message: 'rpc invocation timed out on queue '+queue+' after '+ parsedOptions.timeout + 'ms'});
+					resolve({success: false, errored: true, message: 'rpc invocation timed out on queue '+queue+' after '+ parsedOptions.timeout + 'ms', errorType: 'TIMEOUT'});
 				}, parsedOptions.timeout)
 			}
 
