@@ -1,9 +1,21 @@
 {
     "compilerOptions": {
-        "sourceMap": true,
+        "baseUrl": ".",
         "outDir": "dist",
         "strict": false,
+        "sourceMap": false,
+        "noImplicitAny": false,
         "allowSyntheticDefaultImports": true,
-        "lib": ["esnext", "dom", "es2015"]
-    }
+        "experimentalDecorators": true,
+        "lib": ["esnext", "dom", "es2015"],
+		"paths": {
+			"@src/*": ["./src/*"]
+		}
+    },
+    "exclude": [
+		"node_modules"
+	],
+	"include": [
+		"./src/**/*"
+	]
 }

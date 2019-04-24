@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-class PatternBase {
-    constructor(props) {
+exports.__esModule = true;
+var PatternBase = /** @class */ (function () {
+    function PatternBase(props) {
         this.main = props.instance;
         this.stomp = props.instance.stomp;
     }
@@ -17,9 +17,9 @@ class PatternBase {
      *
      * @returns {Obejct} {queue: {durable, auto-delete, exclusive}, exchange:{type} }
      */
-    parseOptions(options) {
+    PatternBase.prototype.parseOptions = function (options) {
         options = options || {};
-        let retOptions = {
+        var retOptions = {
             queue: {},
             endpoint: '/queue/',
             timeout: options.timeout || 15000
@@ -28,7 +28,7 @@ class PatternBase {
         retOptions.queue['auto-delete'] = options.autoDelete === undefined ? false : options.autoDelete;
         retOptions.queue['exclusive'] = options.exclusive === undefined ? false : options.exclusive;
         if (options.type) {
-            let prefix;
+            var prefix = void 0;
             switch (options.type) {
                 case 'direct':
                 case 'fanout':
@@ -43,23 +43,24 @@ class PatternBase {
             retOptions.endpoint = prefix;
         }
         return retOptions;
-    }
-    logOptions(options) {
+    };
+    PatternBase.prototype.logOptions = function (options) {
         return '[durable:' + options.durable.toString() +
             ', autoDelete:' + options.autoDelete.toString() +
             ']';
-    }
-    encode(msg) {
+    };
+    PatternBase.prototype.encode = function (msg) {
         return msg ? JSON.stringify(msg) : '';
-    }
-    decode(msg) {
+    };
+    PatternBase.prototype.decode = function (msg) {
         return msg ? JSON.parse(msg) : null;
-    }
-    toURL(queue, options) {
+    };
+    PatternBase.prototype.toURL = function (queue, options) {
         return options.endpoint ? options.endpoint + queue : queue;
-    }
-    errorHandle(err) {
+    };
+    PatternBase.prototype.errorHandle = function (err) {
         return { success: false, error: err.message };
-    }
-}
-exports.default = PatternBase;
+    };
+    return PatternBase;
+}());
+exports["default"] = PatternBase;

@@ -3,8 +3,8 @@ services:
   mq:
     image: dubc/rabbitmq-alpine-all-plugins:latest
     environment:
-      RABBITMQ_DEFAULT_PASS: enterra
-      RABBITMQ_DEFAULT_USER: enterra
+      RABBITMQ_DEFAULT_PASS: test
+      RABBITMQ_DEFAULT_USER: test
     ports:
     - 5671:5671/tcp
     - 5672:5672/tcp

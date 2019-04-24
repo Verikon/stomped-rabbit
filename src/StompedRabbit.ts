@@ -141,7 +141,7 @@ export class StompedRabbit extends EventEmitter {
 	/**
 	 * Parses the argued endpoint to extract the user, password.
 	 * 
-	 * @param {String} endpoint the websocket endpoint
+	 * @param {String} endpoint the websocket endpoint structured as ws://user:pass@host:port
 	 * 
 	 * @returns {Object} {user: <username>, pass: <password>, uri: <uri>}
 	 */
