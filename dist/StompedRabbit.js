@@ -76,8 +76,9 @@ let StompedRabbit = exports.StompedRabbit = class StompedRabbit extends _events.
 
 		if (!config || !this._realObject(config)) throw new Error('provide a valid config object');
 
-		config.heartbeat_incoming = config.heartbeat_incoming || 20000;
-		config.heartbeat_outgoing = config.heartbeat_outgoing || 0;
+		config.heartbeat_incoming = config.heartbeat_incoming || 0;
+		config.heartbeat_outgoing = config.heartbeat_outgoing || 5000;
+		console.log('\n\nStompedRabbit Config', config);
 		config.direct = config.direct ? config.direct.replace(/\//g, '') : null;
 		config.topic = config.topic ? config.topic.replace(/\//g, '') : null;
 		config.fanout = config.fanout ? config.fanout.replace(/\//g, '') : null;
@@ -108,9 +109,20 @@ let StompedRabbit = exports.StompedRabbit = class StompedRabbit extends _events.
 
 			if (!_this.config) throw new Error('attempting to connect with an unconfigured instance, invoke configure()');
 
-			const { endpoint, auth, heartbeat_incoming, heartbeat_outgoing } = _this.config;
+			const {
+				endpoint,
+				auth,
+				heartbeat_incoming,
+				heartbeat_outgoing
+			} = _this.config;
+
 			let { debug } = _this.config;
-			const { user, pass, uri } = auth;
+
+			const {
+				user,
+				pass,
+				uri
+			} = auth;
 
 			//instance a new Websocket
 			let ws = new WebSocket(endpoint);
@@ -119,7 +131,7 @@ let StompedRabbit = exports.StompedRabbit = class StompedRabbit extends _events.
 			_this.stomp = _stompjs2.default.over(ws);
 
 			//set the debug.
-			debug = debug === undefined ? false : debug;
+			debug = debug === undefined ? true : debug;
 
 			if (!debug) {
 				_this.stomp.debug = function () {};
