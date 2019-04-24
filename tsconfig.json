@@ -1,21 +1,21 @@
 {
-    "compilerOptions": {
-        "baseUrl": ".",
-        "outDir": "dist",
-        "strict": false,
-        "sourceMap": false,
-        "noImplicitAny": false,
-        "allowSyntheticDefaultImports": true,
-        "experimentalDecorators": true,
-        "lib": ["esnext", "dom", "es2015"],
-		"paths": {
-			"@src/*": ["./src/*"]
-		}
-    },
-    "exclude": [
-		"node_modules"
-	],
-	"include": [
-		"./src/**/*"
-	]
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "dist",
+    "strict": false,
+    "sourceMap": false,
+    "noImplicitAny": false,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "target":"es2016",
+    "paths": {
+      "@src/*": ["./src/*"]
+    }
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "./src/**/*"
+  ]
 }
