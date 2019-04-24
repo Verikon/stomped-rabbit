@@ -22,12 +22,14 @@ export default class PubSub extends PatternBase {
 		//parse the options
 		options = this.parseOptions(options);
 
+		let result;
+
 		let prov = this.stomp.subscribe(this.toURL(queue, options), async frame => {
 
 			try {
 
 				const {body, headers} = frame;
-				let args, result;
+				let args;
 
 				args = this.decode(body);
 

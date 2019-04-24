@@ -57,12 +57,12 @@ export function withStompedRabbit( args ) {
 
 				super(cargs);
 
-				let id = parseInt(Math.random()*10000);
+				let id = parseInt((Math.random()*10000).toString());
 
 				if(!RabbitInstances[instance] || !(RabbitInstances[instance].inst instanceof StompedRabbit)) {
 
 					RabbitInstances[instance] =  {
-						inst: new StompedRabbit(args),
+						inst: new StompedRabbit(),
 						ids: [id]
 					};
 

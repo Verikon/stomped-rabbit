@@ -1,3 +1,5 @@
+import {ClientOptions as IClientOptions} from './types';
+
 import {StompedRabbit} from './StompedRabbit';
 
 export class Client {
@@ -7,19 +9,14 @@ export class Client {
     exchange;
     debug;
 
-    constructor( endpoint, options = {} ) {
+    constructor( endpoint:string, options:IClientOptions = {} ) {
 
-        if(endpoint)
-            this.endpoint = endpoint;
+        this.endpoint = endpoint || null;
+        this.exchange = options.exchange || null;
+        this.debug = options.debug === undefined ? false : options.debug;
+    }
 
-        if(options.exchange)
-            this.exchange = exchange;
-
-        if(options.debug !== undefined)
-            this.debug = options.debug;
-        }
-
-    async connect() {
+    async connect():Promise<any> {
 
         let result;
 
@@ -30,12 +27,10 @@ export class Client {
             exchange
         };
 
-        this.sr = new StompedRabbit(config);
+        this.sr = new StompedRabbit();
         this.sr.configure(config);
 
         await this.sr.connect();
-
-
     }
 
     query() {

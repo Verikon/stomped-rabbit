@@ -1,5 +1,8 @@
 export default class PatternBase {
 
+	main:any;
+	stomp:any;
+
 	constructor( props ) {
 
 		this.main = props.instance;
@@ -22,13 +25,15 @@ export default class PatternBase {
 
 		options = options || {};
 
-		let retOptions = {queue: {}, endpoint: '/queue/'};
+		let retOptions = {
+			queue: {},
+			endpoint: '/queue/',
+			timeout: options.timeout || 15000
+		};
 
 		retOptions.queue['durable'] = options.durable === undefined ? false : options.durable;
 		retOptions.queue['auto-delete'] = options.autoDelete === undefined ? false : options.autoDelete;
 		retOptions.queue['exclusive'] = options.exclusive === undefined ? false : options.exclusive;
-
-		retOptions.timeout = options.timeout || 15000;
 
 		if(options.type) {
 

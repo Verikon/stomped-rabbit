@@ -41,8 +41,7 @@ export default class RPC extends PatternBase {
 				//invoke the listening function
 				try {
 					result = fn(args);
-					if(result instanceof Promise)
-						response = await result;
+					if(result instanceof Promise) await result;
 					result = this.encode(result);
 				} catch( err ) {
 
@@ -103,7 +102,7 @@ export default class RPC extends PatternBase {
 			let timer;
 
 			//create a response queue and apply it to the options.
-			let responseQueue = 'stomped-'+parseInt(Math.random() * 10000000, 10);
+			let responseQueue = 'stomped-'+(Math.random() * 10000000).toString();
 			parsedOptions.queue['reply-to'] = responseQueue;
 
 			//set up the listener on the response queue, autodeleting it (this is an exclusive use)

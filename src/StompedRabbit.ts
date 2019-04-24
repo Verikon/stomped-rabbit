@@ -1,3 +1,5 @@
+import * as T from './types';
+
 import {EventEmitter} from 'events';
 import {v4 as uuid} from 'uuid';
 import Stomp from 'stompjs';
@@ -9,58 +11,51 @@ import Topic from './patterns/Topic';
 
 export class StompedRabbit extends EventEmitter {
 
-	constructor( props ) {
+	configured:boolean = false;
+	connected:boolean = false;
 
-		props = props || {};
+	patterns:any = {};
+	provisions:any = {};
+	client_id:string = null;
 
-		super(props);
+	stomp:any; //stompJS instance
 
-		this.setInitialState();
-	}
+	config:T.Config = null;
 
-	setInitialState() {
+	pubsub: PubSub;
+	rpc: RPC;
 
-		this.configured = false;
-		this.connected = false;
-		this.patterns = {};
-		this.provisions = {};
-		this.client_id = null;
+	constructor( ) {
+
+		super();
 	}
 
 	/**
 	 * Configure StompRabbit
-	 *
-	 * @param {Object} props.config the configuration object
-	 * @param {String} props.config.endpoint the endpoint uri ( eg ws://someone:secret@rabbithost:port/stomp/websocket )
-	 * @param {String} props.config.direct a default direct exchange for the application (you set this up on rabbitMQ)
-	 * @param {String} props.config.fanout a default fanout exchange for the application (you set this up on rabbitMQ)
-	 * @param {String} props.config.topic a default topic exchange for the application.
-	 * @param {Integer} config.heartbeat_incoming milliseconds for incoming heartbeats, default 20000.
-	 * @param {Integer} config.heartbeat_outgoing milliseconds for outgoing heartbeats, default 0.
-	 * @param {Boolean} config.debug run the instance in debug mode.
-	 * @param {Array} config.queues queues to actualise upon conneciton.
-	 * @param {String} config.queues[].pattern the pattern to use for this queue
-	 * @param {String} config.queues[].type the type of queue "fanout"|"direct"|"topic"
-	 * @param {String} config.queues[].name the name or topic pattern for this queue
-	 * @param {Function} config.queues[].listener the function to listen upon the queue with.
-	 * @param {Boolean} connect configure and connect.
-	 * @returns {Promise} {success: true}
+	 * 
+	 * @param {T.ArguedConfig} props.config @see ./types.ts
+	 * @param {T.Queue} props.config.queues[] @see ./types.ts
+	 * 
+	 * @returns {T.Success}
 	 **/
-	configure( config ) {
+	configure( config:T.ArguedConfig ):T.Success {
 
-		if(!config || !this._realObject(config)) throw new Error('provide a valid config object');
-		
-		config.heartbeat_incoming = config.heartbeat_incoming || 0;
-		config.heartbeat_outgoing = config.heartbeat_outgoing || 5000;
-		console.log('\n\nStompedRabbit Config', config);
-		config.direct = config.direct ? config.direct.replace(/\//g, '') : null;
-		config.topic = config.topic ? config.topic.replace(/\//g, '') : null;
-		config.fanout = config.fanout ? config.fanout.replace(/\//g, '') : null;
-		config.auth = this.parseEndpoint(config.endpoint);
+		if(!config || !this._realObject(config))
+			throw new Error('provide a valid config object');
 
-		config.queues = config.queues || [];
+		const defaultConfig = {
+			heartbeat_incoming: 0,
+			heartbeat_outgoing: 5000,
+			queues: [],
+			direct: null,
+			topic: null,
+			fanout: null,
+			auth: null,
+			endpoint: null
+		};
 
-		this.config = config;
+		this.config = Object.assign({}, defaultConfig, config);
+		this.config.auth = this.parseEndpoint(config.endpoint);
 
 		this.configured = true;
 
@@ -77,7 +72,7 @@ export class StompedRabbit extends EventEmitter {
 	 * 
 	 * @returns {Promise}  
 	 */
-	connect() {
+	connect():Promise<boolean|Error> {
 
 		return new Promise((resolve, reject) => {
 
@@ -144,25 +139,13 @@ export class StompedRabbit extends EventEmitter {
 	}
 
 	/**
-	 * todo.
-	 */
-	async startConfiguredQueues() {
-
-		const {queues} = this.config;
-
-		await Promise.all(queues.map(queue => {
-
-		}));
-	}
-
-	/**
 	 * Parses the argued endpoint to extract the user, password.
 	 * 
 	 * @param {String} endpoint the websocket endpoint
 	 * 
 	 * @returns {Object} {user: <username>, pass: <password>, uri: <uri>}
 	 */
-	parseEndpoint( endpoint ) {
+	parseEndpoint( endpoint:string ):T.Endpoint {
 
 		let ret,
 			credentials,
@@ -204,12 +187,13 @@ export class StompedRabbit extends EventEmitter {
 
 	}
 
-	_realObject( obj ) {
+	/* test an object to be an instance of Object */
+	_realObject( obj:any ):boolean {
 		
 		return (!!obj) && (obj.constructor === Object);
 	};
 
-	clientId( refresh ) {
+	clientId( refresh:boolean ):string {
 
 		this.client_id = (refresh || !this.client_id) ? uuid() : this.client_id;
 		return this.client_id;

@@ -1,0 +1,88 @@
+version: '3'
+services:
+  mq:
+    image: dubc/rabbitmq-alpine-all-plugins:latest
+    environment:
+      RABBITMQ_DEFAULT_PASS: enterra
+      RABBITMQ_DEFAULT_USER: enterra
+    ports:
+    - 5671:5671/tcp
+    - 5672:5672/tcp
+    - 15671:15671/tcp
+    - 15672:15672/tcp
+    - 15674:15674/tcp
+  postgres:
+    image: postgres:10.5
+    environment:
+      POSTGRES_PASSWORD: enterra
+      POSTGRES_USER: enterra
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432/tcp
+  prisma:
+    image: prismagraphql/prisma:1.24
+    environment:
+      PRISMA_CONFIG: |
+        port: 4466
+        databases:
+          default:
+            connector: postgres
+            host: postgres
+            port: 5432
+            user: enterra
+            password: enterra
+            migrations: true
+    depends_on:
+      - postgres
+    ports:
+      - 4466:4466/tcp
+  prisma-auth:
+    image: entdocker.azurecr.io/prisma-auth:latest
+    environment:
+      AUTH_PRISMA_URI: http://prisma:4466/enterra/auth
+    ports:
+    - 4000:4000/tcp
+    depends_on:
+    - prisma
+  prisma-stitch:
+    image: entdocker.azurecr.io/prisma-stitch:latest
+    environment:
+      MQ: "true"
+      MQ_ENDPOINT: amqp://enterra:enterra@mq:5672
+      MQ_EXCHANGE: ecmis
+      GQL_ENDPOINTS: '[{"url":"http://prisma-auth:4000"}]'
+    ports:
+    - 4444:4444/tcp
+  parser:
+    image: entdocker.azurecr.io/ent-node-parser:latest
+    environment:
+      LOG_LEVEL: 5
+      PORT: 4080
+      AZURE_STORAGE_ACCOUNT: entinsightengine
+      AZURE_STORAGE_ACCESS_KEY: ENF+AZTc/DLAa6LSJVHrIVM6e6ECA+DcSCVlqEYa+Nbx+7yzQ9UIgtVSNNa0GBl3RK79VTNBwFjnCCmgCNDd4Q==
+      AZURE_DEFAULT_CONTAINER: csv
+      AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=https;AccountName=entinsightengine;AccountKey=ENF+AZTc/DLAa6LSJVHrIVM6e6ECA+DcSCVlqEYa+Nbx+7yzQ9UIgtVSNNa0GBl3RK79VTNBwFjnCCmgCNDd4Q==;EndpointSuffix=core.windows.net
+    ports:
+      - 4080:4080/tcp
+  ie-workflow-service:
+    image: entdocker.azurecr.io/insight-engine-workflow-service:latest
+    environment:
+      DB: apollo
+      DB_HOST: postgres
+      DB_PASS: Enterra!02
+      DB_USER: apollo
+      MQ_HOST: mq
+      MQ_PASS: enterra
+      MQ_USER: enterra
+      HEKBDB_HOST: 192.168.75.63:9001
+      KB_MOCK_MODE: 'False'
+      CYC_KB_WS_HOST: 192.168.75.230:8022
+      PROFILER_TIMEOUT_SECONDS: '3000'
+    stdin_open: true
+    tty: true
+    depends_on:
+      - postgres
+      - mq
+volumes:
+  postgres: {}

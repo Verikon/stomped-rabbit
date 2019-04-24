@@ -10,12 +10,12 @@ export default class FNF extends PatternBase {
 	/**
 	 * Create a FNF listener
 	 */
-	async provision( queue, options ) {
+	async provision( queue:string, options ) {
 
+		/*
 		//parse the options
-		options = this.parseOptions(options);
-
-
+		const toptions = this.parseOptions(options);
+		*/
 	}
 
 	async deprovision() {
@@ -33,6 +33,7 @@ export default class FNF extends PatternBase {
 	 */
 	async invoke( queue, message, options ) {
 
+		/*
 		//parse the options.
 		options = this.parseOptions(options);
 
@@ -40,7 +41,7 @@ export default class FNF extends PatternBase {
 		message = this.encode(message);
 		
 		//create a response queue and apply it to the options.
-		let responseQueue = 'stomped-'+parseInt(Math.random() * 100000, 10);
+		let responseQueue = 'stomped-'+(Math.random()*100000).toString();
 		options['reply-to'] = responseQueue;
 		
 		//set up the listener on the response queue, autodeleting it (this is an exclusive use)
@@ -55,6 +56,7 @@ export default class FNF extends PatternBase {
 
 		//fire off the rpc invocation.
 		this.client.send('/queue/'+queue, options, )
+		*/
 
 	}
 
