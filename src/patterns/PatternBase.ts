@@ -25,6 +25,8 @@ export default class PatternBase {
 
 		options = options || {};
 
+		const {config} = this.main;
+
 		let retOptions = {
 			queue: {},
 			endpoint: '/queue/',
@@ -35,25 +37,29 @@ export default class PatternBase {
 		retOptions.queue['auto-delete'] = options.autoDelete === undefined ? false : options.autoDelete;
 		retOptions.queue['exclusive'] = options.exclusive === undefined ? false : options.exclusive;
 
-		if(options.type) {
+		const resolveExchange = type => {
+			
+			if(config.name) return `/${config.name}/`;
+			
+			switch(type) {
 
-			let prefix;
+				case 'direct': 
+					return `/exchange/${config.direct}/` || '/direct/'
 
-			switch(options.type) {
-
-				case 'direct':
 				case 'fanout':
-					prefix = '/exchange/';
-					break;
+					return `/exchange/${config.fanout}/` || '/fanout/';
+
 				case 'topic':
-					prefix = '/topic/';
-					break;
+					return `/exchange/${config.topic}/` || '/topic/';
+
 				default:
-					throw new Error('Unknown queue type `'+options.type+'`');
+					throw new Error(`Invalid exchange type "${type}" - valid options are "direct", "fanout" or "topic"`);
 			}
 
-			retOptions.endpoint = prefix;
-		}
+		};
+
+		if(options.type)
+			retOptions.endpoint = resolveExchange(options.type);
 
 		return retOptions;
 	}
@@ -80,8 +86,15 @@ export default class PatternBase {
 		return options.endpoint ? options.endpoint+queue : queue;
 	}
 
+	toExchange( key, options ) {
+
+		//const exchange = 
+		//return options.endpoint+
+	}
+
 	errorHandle( err ) {
 
 		return {success:false, error: err.message};
 	}
+
 }

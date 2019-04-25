@@ -8,14 +8,43 @@ export default class CTE extends PatternBase {
 	}
 
 	/**
-	 * Create an RPC listener.
+	 * Provision a CTE listener
 	 * 
-	 * If you're actually legit using this , please DM me as to how/why as i can't think of a single use case for this other than
-	 * to itch my completionism.
-	 * 
+	 * @param queue The name of the queue to listen to
+	 * @param key the routing key to dispatch to on the exchange
+	 * @param fn listener function
+	 * @param options the options object
+	 * @param options.type the type of exchange: "fanout", "direct", "topic"; default is topic.
+	 * @param options.exchange an exchange to dispatch, default is the default exchange.
 	 */
-	async provision( queue, options ) {
+	async provision( queue:string, key:string, fn:Function, options ) {
 
+		options = options || {};
+		options.type = options.type || 'topic';
+
+		const parsedOptions = this.parseOptions(options);
+
+		if(options.debug) {
+			console.log('\n\n');
+			console.log('Provisioning CTE');
+			console.log(`Receiving via queue "${queue}"`)
+			console.log(`Repying on exchange "${parsedOptions.endpoint+key}"`);
+		}
+
+		//set up the listener on the response queue, autodeleting it (this is an exclusive use)
+		this.stomp.subscribe(queue, async frame => {
+
+			const mutateKey = value => key = value;
+
+			const message = this.decode(frame.body);
+			const response = await fn(message, {mutateKey});
+			const reply = this.encode(response);
+
+			this.stomp.send(parsedOptions.endpoint+key, {}, reply);
+
+		}, {id: key});
+
+		return true;
 	}
 
 	async deprovision() {
@@ -32,6 +61,17 @@ export default class CTE extends PatternBase {
 	 * @returns {Promise} resolves {true}
 	 */
 	async invoke( queue, message, options ) {
+
+		options = options || {};
+
+		//parse the options.
+		const parsedOptions = this.parseOptions(options);
+
+		//encode the options.
+		message = this.encode(message);
+
+		//fire off the message.
+		this.stomp.send(this.toURL(queue, parsedOptions), parsedOptions.queue, message);
 
 	}
 

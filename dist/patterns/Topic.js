@@ -12,14 +12,27 @@ export default class Topoic extends PatternBase {
         super(props);
     }
     /**
-     * Create an RPC listener.
+     * Create an Topic Exchange listener.
      *
-     * If you're actually legit using this , please DM me as to how/why as i can't think of a single use case for this other than
-     * to itch my completionism.
+     * @param key the routing key to listen on
+     * @param fn The listener function
+     * @param options an options object
+     * @param options.exchange the exchange to use, default is the default topic exchange
      *
      */
-    provision(queue, options) {
+    provision(key, fn, options) {
         return __awaiter(this, void 0, void 0, function* () {
+            options = options || {};
+            options.type = 'topic';
+            const parsedOptions = this.parseOptions(options);
+            if (options.debug) {
+                console.log(`\nProvisioned Topic listener at "${parsedOptions.endpoint + key}"`);
+            }
+            this.stomp.subscribe(parsedOptions.endpoint + key, (frame) => __awaiter(this, void 0, void 0, function* () {
+                const message = this.decode(frame.body);
+                yield fn(message, frame);
+            }));
+            return true;
         });
     }
     deprovision() {

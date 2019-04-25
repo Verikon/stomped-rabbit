@@ -4,6 +4,7 @@ export interface Config {
     direct: string; //a default direct exchange name for the application (must be present on the rabbitMQ server).
     topic: string; //a default topic exchange name for the application (must be present on the rabbitMQ server).
     fanout: string; //a default fanout exchange name for the application (must be present on the rabbitMQ server).
+    exchange: string; //a default exchange
     queues: Array<Queue>; //queues to actualise upon connection.
     endpoint: string; //the endpoint uri ( eg ws://someone:secret@rabbithost:port/stomp/websocket )
     auth: Endpoint; //the parsed endpoint

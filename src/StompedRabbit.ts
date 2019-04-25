@@ -24,6 +24,8 @@ export class StompedRabbit extends EventEmitter {
 
 	pubsub: PubSub;
 	rpc: RPC;
+	cte: CTE;
+	topic: Topic;
 
 	constructor( ) {
 
@@ -47,6 +49,7 @@ export class StompedRabbit extends EventEmitter {
 			heartbeat_incoming: 0,
 			heartbeat_outgoing: 5000,
 			queues: [],
+			exchange: null,
 			direct: null,
 			topic: null,
 			fanout: null,
@@ -101,7 +104,7 @@ export class StompedRabbit extends EventEmitter {
 			this.stomp = Stomp.over(ws);
 
 			//set the debug.
-			debug = debug === undefined ? true : debug;
+			debug = debug === undefined ? false : debug;
 
 			if(!debug) {
 				this.stomp.debug = () => {};
@@ -132,10 +135,10 @@ export class StompedRabbit extends EventEmitter {
 
 	bindPatterns() {
 
-		//this.cte = this.patterns.cte = new CTE({config: this.config});
+		this.cte = this.patterns.cte = new CTE({instance: this});
 		this.pubsub = this.patterns.pubsub = new PubSub({instance: this});
 		this.rpc = this.patterns.rpc = new RPC({instance: this});
-		//this.topic = this.patterns.topic = new Topic({config: this.config});
+		this.topic = this.patterns.topic = new Topic({instance: this});
 	}
 
 	/**
