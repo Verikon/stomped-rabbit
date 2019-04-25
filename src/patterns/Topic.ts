@@ -11,7 +11,7 @@ export default class Topoic extends PatternBase {
 	 * Create an Topic Exchange listener.
 	 * 
 	 * @param key the routing key to listen on
-	 * @param fn The listener function
+	 * @param fn The listener function with signature :(message, frame, {mutateKey:Fn})
 	 * @param options an options object
 	 * @param options.exchange the exchange to use, default is the default topic exchange
 	 * 

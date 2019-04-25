@@ -9462,7 +9462,7 @@ function (_PatternBase_1$defaul) {
    *
    * @param queue The name of the queue to listen to
    * @param key the routing key to dispatch to on the exchange
-   * @param fn listener function
+   * @param fn listener function with signature :(message, frame, {mutateKey:Fn})
    * @param options the options object
    * @param options.type the type of exchange: "fanout", "direct", "topic"; default is topic.
    * @param options.exchange an exchange to dispatch, default is the default exchange.
@@ -9509,7 +9509,7 @@ function (_PatternBase_1$defaul) {
 
                             message = this.decode(frame.body);
                             _context.next = 4;
-                            return fn(message, {
+                            return fn(message, frame, {
                               mutateKey: mutateKey
                             });
 
@@ -10143,7 +10143,7 @@ function (_PatternBase_1$defaul) {
    * Create an Topic Exchange listener.
    *
    * @param key the routing key to listen on
-   * @param fn The listener function
+   * @param fn The listener function with signature :(message, frame, {mutateKey:Fn})
    * @param options an options object
    * @param options.exchange the exchange to use, default is the default topic exchange
    *
@@ -10527,7 +10527,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57472" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58135" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -102,7 +102,7 @@ describe(`CTE Tests`, function() {
         it('Provisions a "test_this" queue on the MQ which replys via the "test" exchange', async () => {
 
             const result = await page.evaluate(_ =>{
-                return (window as any).sr.cte.provision('test_this', 'asset.test.*', (message, helpers) => {
+                return (window as any).sr.cte.provision('test_this', 'asset.test.*', (message, frame, helpers) => {
                     helpers.mutateKey('asset.test.6');
                     (window as any).receivedMessage = true
                     return {success:true, it: "worked"};
