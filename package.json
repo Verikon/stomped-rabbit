@@ -1,6 +1,6 @@
 {
 	"name": "stomped-rabbit",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"description": "Browser-side rabbitMQ client (over STOMP)",
 	"main": "dist/index.js",
 	"repository": "git@github.com:Verikon/stomped-rabbit.git",

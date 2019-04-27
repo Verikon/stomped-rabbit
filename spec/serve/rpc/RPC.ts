@@ -1,4 +1,5 @@
-//import {StompedRabbit} from '@src/StompedRabbit';
+import "babel-polyfill";
+
 import {StompedRabbit} from '../../../src/StompedRabbit';
 
 (window as any).sr = new StompedRabbit();

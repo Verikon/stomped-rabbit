@@ -23,3 +23,7 @@ class myClass {
  }
 }
 ```
+
+###RPC
+####Provision
+SR.rpc.provision()
