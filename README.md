@@ -1,5 +1,12 @@
 Usage:
 
+### as Hook
+import {useStompedRabbit} from 'stomped-rabbit';
+
+
+const mq = await useStompedRabbit('main', {endpoint: 'ws://user:pass@somewhere:15672', config options});
+
+
 import {withStompedRabbit} from 'stomped-rabbit';
 
 ```

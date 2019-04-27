@@ -16,7 +16,7 @@ export default class CTE extends PatternBase {
      *
      * @param queue The name of the queue to listen to
      * @param key the routing key to dispatch to on the exchange
-     * @param fn listener function
+     * @param fn listener function with signature :(message, frame, {mutateKey:Fn})
      * @param options the options object
      * @param options.type the type of exchange: "fanout", "direct", "topic"; default is topic.
      * @param options.exchange an exchange to dispatch, default is the default exchange.
@@ -36,7 +36,7 @@ export default class CTE extends PatternBase {
             this.stomp.subscribe(queue, (frame) => __awaiter(this, void 0, void 0, function* () {
                 const mutateKey = value => key = value;
                 const message = this.decode(frame.body);
-                const response = yield fn(message, { mutateKey });
+                const response = yield fn(message, frame, { mutateKey });
                 const reply = this.encode(response);
                 this.stomp.send(parsedOptions.endpoint + key, {}, reply);
             }), { id: key });
