@@ -9,10 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import assert from 'assert';
 import { StompedRabbit } from './StompedRabbit';
 let instance = {};
-export function useStompedRabbit(id, config) {
+export function useStompedRabbit(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log('YOBINGO', id, config);
-        id = id || 'main';
+        args = args || {};
+        const id = args.id || 'main';
+        const config = args.config || null;
         //simple request for an SR instance.
         if (instance[id] && !config)
             return instance[id];

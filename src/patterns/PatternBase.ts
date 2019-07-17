@@ -30,7 +30,7 @@ export default class PatternBase {
 		let retOptions = {
 			queue: {},
 			endpoint: '/queue/',
-			timeout: options.timeout || 15000
+			timeout: options.timeout === undefined ? 15000 : options.timeout
 		};
 
 		retOptions.queue['durable'] = options.durable === undefined ? false : options.durable;

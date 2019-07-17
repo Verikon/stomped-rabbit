@@ -6,10 +6,12 @@ import {StompedRabbit} from './StompedRabbit';
 
 let instance = {};
 
-export async function useStompedRabbit( id?, config? ):Promise<StompedRabbit> {
+export async function useStompedRabbit( args:any ):Promise<StompedRabbit> {
 
-    console.log('YOBINGO', id, config);
-    id = id || 'main';
+    args = args || {};
+    
+    const id = args.id || 'main';
+    const config = args.config || null;
 
     //simple request for an SR instance.
     if(instance[id] && !config)

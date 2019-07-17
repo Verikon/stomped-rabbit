@@ -71,7 +71,7 @@ export default class RPC extends PatternBase {
      * @param {String} queue the queue/endpoint to the RPC listener.
      * @param {*} message the message being sent as arguments to the listener.
      * @param {Object} options an options object
-     * @param {Number} options.timeout default, no timeout.
+     * @param {Number} options.timeout allowable time for response in milliseconds. A value of zero is infinite. Default, 15 seconds.
      * @returns {Promise} resolves with the RPC response.
      */
     invoke(queue, message, options) {
@@ -80,7 +80,7 @@ export default class RPC extends PatternBase {
             //parse the options.
             const parsedOptions = this.parseOptions(options);
             //apply alloweable timeout to the RPC pattern.Not done in the parseOptions baseclass method as this should be unique to the pattern.
-            if (options.timeout)
+            if (options.timeout !== undefined)
                 parsedOptions.timeout = options.timeout;
             //encode the options.
             message = this.encode(message);
@@ -96,6 +96,7 @@ export default class RPC extends PatternBase {
                     clearTimeout(timer);
                 resolve(response);
             }, { id: responseQueue, 'exclusive': true });
+            //evaluating a number here, where 0 is false obviously.
             if (parsedOptions.timeout) {
                 setTimeout(e => {
                     resolve({ success: false, errored: true, message: 'rpc invocation timed out on queue ' + queue + ' after ' + parsedOptions.timeout + 'ms', errorType: 'TIMEOUT' });
