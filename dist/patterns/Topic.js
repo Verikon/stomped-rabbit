@@ -18,18 +18,29 @@ export default class Topoic extends PatternBase {
      * @param fn The listener function with signature :(message, frame, {mutateKey:Fn})
      * @param options an options object
      * @param options.exchange the exchange to use, default is the default topic exchange
-     *
+     * @param options.parser which parser to use either a named parser 'json', 'protobuff', 'none' or false for clear text
      */
     provision(key, fn, options) {
         return __awaiter(this, void 0, void 0, function* () {
             options = options || {};
             options.type = 'topic';
+            options.parser = options.parser === undefined ? 'json' : options.parser;
             const parsedOptions = this.parseOptions(options);
             if (options.debug) {
                 console.log(`\nProvisioned Topic listener at "${parsedOptions.endpoint + key}"`);
             }
+            console.log('LISTENING ON STOMPER', parsedOptions);
             this.stomp.subscribe(parsedOptions.endpoint + key, (frame) => __awaiter(this, void 0, void 0, function* () {
-                const message = this.decode(frame.body);
+                let message;
+                switch (options.parser) {
+                    case 'none':
+                    case false:
+                        message = frame.body;
+                        break;
+                    case 'json':
+                    default:
+                        message = this.decode(frame.body);
+                }
                 yield fn(message, frame);
             }));
             return true;

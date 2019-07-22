@@ -16,6 +16,7 @@ export default class PatternBase {
      * @returns {Obejct} {queue: {durable, auto-delete, exclusive}, exchange:{type} }
      */
     parseOptions(options) {
+        console.log('patternabase', options);
         options = options || {};
         const { config } = this.main;
         let retOptions = {
@@ -31,11 +32,11 @@ export default class PatternBase {
                 return `/${config.name}/`;
             switch (type) {
                 case 'direct':
-                    return `/exchange/${config.direct}/` || '/direct/';
+                    return `/exchange/${options.exchange || config.topic || 'amq.direct'}/`;
                 case 'fanout':
-                    return `/exchange/${config.fanout}/` || '/fanout/';
+                    return `/exchange/${options.exchange || config.topic || 'amq.fanout'}/`;
                 case 'topic':
-                    return `/exchange/${config.topic}/` || '/topic/';
+                    return `/exchange/${options.exchange || config.topic || 'amq.topic'}/`;
                 default:
                     throw new Error(`Invalid exchange type "${type}" - valid options are "direct", "fanout" or "topic"`);
             }

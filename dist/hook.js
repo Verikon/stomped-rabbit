@@ -21,8 +21,10 @@ export function useStompedRabbit(args) {
         if (!instance[id] && !config)
             throw new Error(err(`instance with id:"${id}" does not exist, configure it`));
         //request for an SR instance which exists, but attempting to configure it.
-        if (instance[id] && config)
-            throw new Error(err(`instance with id "${id}" already exists but you're attempting to configure it`));
+        if (instance[id] && config) {
+            console.warn(`stomped-rabbit: instance with id${id} already exists, you're attempting to configure it`);
+            return instance[id];
+        }
         if (!instance[id] && config) {
             yield configure(id, config);
             return instance[id];
