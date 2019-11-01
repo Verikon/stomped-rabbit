@@ -90,11 +90,16 @@ export default class RPC extends PatternBase {
             parsedOptions.queue['reply-to'] = responseQueue;
             //set up the listener on the response queue, autodeleting it (this is an exclusive use)
             this.stomp.subscribe(responseQueue, frame => {
-                let response = this.decode(frame.body);
-                this.stomp.unsubscribe(responseQueue);
-                if (timer)
-                    clearTimeout(timer);
-                resolve(response);
+                try {
+                    let response = this.decode(frame.body);
+                    this.stomp.unsubscribe(responseQueue);
+                    if (timer)
+                        clearTimeout(timer);
+                    resolve(response);
+                }
+                catch (err) {
+                    reject(err);
+                }
             }, { id: responseQueue, 'exclusive': true });
             //evaluating a number here, where 0 is false obviously.
             if (parsedOptions.timeout) {

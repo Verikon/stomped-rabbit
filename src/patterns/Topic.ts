@@ -28,8 +28,6 @@ export default class Topoic extends PatternBase {
 			console.log(`\nProvisioned Topic listener at "${parsedOptions.endpoint+key}"`)
 		}
 
-		console.log('LISTENING ON STOMPER', parsedOptions);
-
 		this.stomp.subscribe(parsedOptions.endpoint+key, async frame => {
 
 			let message;

@@ -23,8 +23,6 @@ export default class PatternBase {
 	 */
 	parseOptions( options ) {
 
-		console.log('patternabase', options)
-
 		options = options || {};
 
 		const {config} = this.main;

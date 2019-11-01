@@ -16,7 +16,6 @@ export default class PatternBase {
      * @returns {Obejct} {queue: {durable, auto-delete, exclusive}, exchange:{type} }
      */
     parseOptions(options) {
-        console.log('patternabase', options);
         options = options || {};
         const { config } = this.main;
         let retOptions = {

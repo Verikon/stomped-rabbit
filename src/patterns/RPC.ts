@@ -108,11 +108,16 @@ export default class RPC extends PatternBase {
 			//set up the listener on the response queue, autodeleting it (this is an exclusive use)
 			this.stomp.subscribe(responseQueue, frame => {
 
-				let response = this.decode(frame.body);
-				this.stomp.unsubscribe(responseQueue);
+				try {
+					let response = this.decode(frame.body);
+					this.stomp.unsubscribe(responseQueue);
 
-				if(timer) clearTimeout(timer);
-				resolve(response);
+					if(timer) clearTimeout(timer);
+					resolve(response);
+
+				} catch( err ) {
+					reject(err)
+				}
 
 			}, {id: responseQueue, 'exclusive': true});
 
